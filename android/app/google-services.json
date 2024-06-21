@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "634547135773",
+    "project_id": "flash-chat-788f8",
+    "storage_bucket": "flash-chat-788f8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:634547135773:android:bfba58b897746a88d96df4",
+        "android_client_info": {
+          "package_name": "com.sana.flash_chat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAh0aC190OjgCM9cNzhNQbVEvJ6Nm-m-dU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
