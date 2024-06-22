@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:flash_chat_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
 
@@ -12,9 +14,11 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 
+  final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
-
   late User loggedInUser;
+
+  late String messageText;
 
   @override
   void initState() {
@@ -28,10 +32,24 @@ class _ChatScreenState extends State<ChatScreen> {
       final user = _auth.currentUser;
       if(user != null){
         loggedInUser = user;
-        print(loggedInUser.email);
       }
     }catch(e){
       print(e);
+    }
+  }
+
+  // void getMessages() async{
+  //   final messages = await _firestore.collection('messages').get();
+  //   for(var message in  messages.docs){
+  //     print(message.data());
+  //   }
+  // }
+
+  void meassgesStream() async{
+    await for (var snapshot in _firestore.collection('messages').snapshots()){
+      for(var message in  snapshot.docs){
+            print(message.data());
+          }
     }
   }
 
@@ -44,7 +62,9 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                //Implement logout functionality
+                meassgesStream();
+                // _auth.signOut();
+                // Navigator.pop(context);
               }),
         ],
         title: const Text('⚡️Chat'),
@@ -55,6 +75,29 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            StreamBuilder<QuerySnapshot>(
+                stream: _firestore.collection('messages').snapshots(),
+                builder: (context,snapshot) {
+                  if(!snapshot.hasData){
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.lightBlueAccent,
+                      ),
+                    );
+                  }
+                    final messages = snapshot.data;
+                    List<Text> messageWidgets = [];
+                    for(var message in messages!.docs){
+                      final messageText = message.data();
+                      final messageSender = message.data();
+
+                      final messageWidget = Text('$messageText from $messageSender');
+                      messageWidgets.add(messageWidget);
+                    }
+                    return Column(
+                      children: messageWidgets,
+                    );
+                }),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -63,14 +106,18 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        //Do something with the user input.
+                        messageText = value;
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   TextButton(
                     onPressed: () {
-                      //Implement send functionality.
+                      //messageText + loggedInUser.email
+                      _firestore.collection('messages').add({
+                        'text':messageText,
+                        'sender':loggedInUser.email
+                      });
                     },
                     child: const Text(
                       'Send',
